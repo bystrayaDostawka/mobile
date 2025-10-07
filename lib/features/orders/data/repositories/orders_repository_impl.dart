@@ -1,8 +1,11 @@
 import '../../../../core/error/failures.dart' as failures;
 import '../../../../core/usecase/usecase.dart';
+import 'package:dio/dio.dart';
+
 import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/order_status_entity.dart';
 import '../../domain/entities/order_comment_entity.dart';
+import '../../domain/entities/order_file_entity.dart';
 import '../../domain/repositories/orders_repository.dart';
 import '../datasources/orders_remote_datasource.dart';
 import '../models/orders_response_model.dart';
@@ -66,6 +69,46 @@ class OrdersRepositoryImpl implements OrdersRepository {
   }
 
   @override
+  Future<Result<OrderDetailsEntity>> createOrder({
+    required int bankId,
+    required String product,
+    required String name,
+    required String surname,
+    required String patronymic,
+    required String phone,
+    required String address,
+    required DateTime deliveryDate,
+    String? deliveryTimeRange,
+    int? courierId,
+    String? note,
+  }) async {
+    try {
+      final orderDetails = await remoteDataSource.createOrder(
+        bankId: bankId,
+        product: product,
+        name: name,
+        surname: surname,
+        patronymic: patronymic,
+        phone: phone,
+        address: address,
+        deliveryDate: deliveryDate,
+        deliveryTimeRange: deliveryTimeRange,
+        courierId: courierId,
+        note: note,
+      );
+      final orderDetailsEntity = _mapToDetailsEntity(orderDetails);
+      return Result.success(orderDetailsEntity);
+    } catch (e) {
+      if (e is failures.Failure) {
+        return Result.failure(e);
+      }
+      return Result.failure(
+        const failures.ServerFailure('Ошибка создания заказа'),
+      );
+    }
+  }
+
+  @override
   Future<Result<List<OrderStatusEntity>>> getOrderStatuses() async {
     try {
       final statuses = await remoteDataSource.getOrderStatuses();
@@ -89,6 +132,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
     int orderStatusId,
     String? note,
     DateTime? deliveryDate,
+    {String? deliveryTimeRange}
   ) async {
     try {
       final updatedOrder = await remoteDataSource.updateOrderStatus(
@@ -96,6 +140,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
         orderStatusId,
         note,
         deliveryDate,
+        deliveryTimeRange: deliveryTimeRange,
       );
       final orderDetailsEntity = _mapToDetailsEntity(updatedOrder);
       return Result.success(orderDetailsEntity);
@@ -125,6 +170,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
       deliveredAt: model.deliveredAt != null
           ? DateTime.parse(model.deliveredAt!)
           : null,
+      deliveryTimeRange: model.deliveryTimeRange,
       orderStatusId: model.orderStatusId,
       note: model.note,
       declinedReason: model.declinedReason,
@@ -160,6 +206,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
       address: model.address ?? '',
       deliveryAt: model.deliveryAt,
       deliveredAt: model.deliveredAt,
+      deliveryTimeRange: model.deliveryTimeRange,
       courierId: model.courierId,
       orderStatusId: model.orderStatusId ?? 0,
       note: model.note,
@@ -409,6 +456,49 @@ class OrdersRepositoryImpl implements OrdersRepository {
       }
       return Result.failure(
         const failures.ServerFailure('Ошибка удаления комментария'),
+      );
+    }
+  }
+
+  @override
+  Future<Result<List<OrderFileEntity>>> getOrderFiles(int orderId) async {
+    try {
+      final fileModels = await remoteDataSource.getOrderFiles(orderId);
+      final entities = fileModels.map((model) => OrderFileEntity(
+        id: model.id ?? 0,
+        fileName: model.fileName ?? '',
+        fileType: model.fileType ?? '',
+        fileSize: model.fileSize ?? 0,
+        formattedSize: model.formattedSize ?? '',
+        url: model.url ?? '',
+        uploadedBy: UploaderEntity(
+          id: model.uploadedBy?.id ?? 0,
+          name: model.uploadedBy?.name ?? '',
+        ),
+        createdAt: model.createdAt ?? DateTime.now(),
+      )).toList();
+      return Result.success(entities);
+    } catch (e) {
+      if (e is failures.Failure) {
+        return Result.failure(e);
+      }
+      return Result.failure(
+        const failures.ServerFailure('Ошибка получения файлов заказа'),
+      );
+    }
+  }
+
+  @override
+  Future<Result<Response<List<int>>>> downloadOrderFile(int orderId, int fileId) async {
+    try {
+      final response = await remoteDataSource.downloadOrderFile(orderId, fileId);
+      return Result.success(response);
+    } catch (e) {
+      if (e is failures.Failure) {
+        return Result.failure(e);
+      }
+      return Result.failure(
+        const failures.ServerFailure('Ошибка скачивания файла'),
       );
     }
   }

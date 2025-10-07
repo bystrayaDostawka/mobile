@@ -13,6 +13,7 @@ import '../../domain/entities/sort_order.dart';
 import '../bloc/orders_bloc.dart';
 import '../widgets/orders_list_widget.dart';
 import '../widgets/orders_filters_modal.dart';
+import 'create_order_page.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -172,6 +173,21 @@ class _OrdersPageState extends State<OrdersPage> {
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Кнопка создания заказа
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () async {
+                        final result = await Navigator.of(context).push<bool>(
+                          MaterialPageRoute(
+                            builder: (context) => const CreateOrderPage(),
+                          ),
+                        );
+                        if (result == true) {
+                          // Обновляем список заказов после создания
+                          context.read<OrdersBloc>().add(const LoadOrders());
+                        }
+                      },
+                    ),
                     // Кнопка фильтра
                     IconButton(
                       icon: Icon(

@@ -16,7 +16,7 @@ class ChangeStatusButton extends StatelessWidget {
 
   final OrderStatusEntity currentStatus;
   final List<OrderStatusEntity> availableStatuses;
-  final Function(int statusId, String note, DateTime? deliveryDate) onStatusChanged;
+  final Function(int statusId, String note, DateTime? deliveryDate, String? deliveryTimeRange) onStatusChanged;
   final bool isLoading;
 
   @override
@@ -74,8 +74,8 @@ class ChangeStatusButton extends StatelessWidget {
       context: context,
       currentStatusId: currentStatus.id,
       availableStatuses: availableStatuses,
-      onStatusChanged: (statusId, note, deliveryDate) {
-        onStatusChanged(statusId, note, deliveryDate);
+      onStatusChanged: (statusId, note, deliveryDate, deliveryTimeRange) {
+        onStatusChanged(statusId, note, deliveryDate, deliveryTimeRange);
       },
     );
   }

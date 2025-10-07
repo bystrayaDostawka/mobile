@@ -51,13 +51,14 @@ class OrderActionsBar extends StatelessWidget {
                     currentStatus: currentStatus,
                     availableStatuses: statuses,
                     isLoading: isLoading,
-                    onStatusChanged: (statusId, note, deliveryDate) {
+                    onStatusChanged: (statusId, note, deliveryDate, deliveryTimeRange) {
                       context.read<OrderDetailsBloc>().add(
                         UpdateOrderStatus(
                           orderId: orderDetails.id,
                           orderStatusId: statusId,
                           note: note,
                           deliveryDate: deliveryDate,
+                          deliveryTimeRange: deliveryTimeRange,
                         ),
                       );
                     },

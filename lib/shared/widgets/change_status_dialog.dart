@@ -16,14 +16,14 @@ class ChangeStatusDialog extends StatefulWidget {
 
   final int currentStatusId;
   final List<OrderStatusEntity> availableStatuses;
-  final Function(int statusId, String note, DateTime? deliveryDate) onStatusChanged;
+  final Function(int statusId, String note, DateTime? deliveryDate, String? deliveryTimeRange) onStatusChanged;
 
   /// Показать диалог
   static Future<void> show({
     required BuildContext context,
     required int currentStatusId,
     required List<OrderStatusEntity> availableStatuses,
-    required Function(int statusId, String note, DateTime? deliveryDate) onStatusChanged,
+    required Function(int statusId, String note, DateTime? deliveryDate, String? deliveryTimeRange) onStatusChanged,
   }) {
     return showModalBottomSheet<void>(
       useSafeArea: true,
@@ -47,6 +47,7 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
   final TextEditingController _noteController = TextEditingController();
   final FocusNode _noteFocusNode = FocusNode();
   DateTime? _selectedDeliveryDate;
+  String? _selectedTimeRange;
   bool _isSubmitting = false;
   bool _showNoteError = false;
   bool _showDateError = false;
@@ -118,9 +119,11 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
               const SizedBox(height: 20),
               _buildStatusSelection(),
               const SizedBox(height: 20),
-              // Поле выбора даты (только для статуса "Перенос")
+              // Поля выбора даты и слота (только для статуса "Перенос")
               if (_needsDeliveryDate()) ...[
                 _buildDateField(),
+                const SizedBox(height: 12),
+                _buildTimeSlotField(),
                 const SizedBox(height: 20),
               ],
               _buildNoteField(),
@@ -341,7 +344,7 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
         Row(
           children: [
             Text(
-              'Новая дата и время доставки',
+              'Новая дата доставки',
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
@@ -382,7 +385,7 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
                   child: Text(
                     _selectedDeliveryDate != null
                         ? '${_selectedDeliveryDate!.day}.${_selectedDeliveryDate!.month}.${_selectedDeliveryDate!.year} ${_selectedDeliveryDate!.hour.toString().padLeft(2, '0')}:${_selectedDeliveryDate!.minute.toString().padLeft(2, '0')}'
-                        : 'Выберите дату и время',
+                        : 'Выберите дату',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: _selectedDeliveryDate != null
                           ? AppColors.textPrimary
@@ -400,6 +403,67 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Поле для выбора временного слота
+  Widget _buildTimeSlotField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Временной слот',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '*',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _timeSlotChip('10-14', '10:00 - 14:00'),
+            _timeSlotChip('12-16', '12:00 - 16:00'),
+            _timeSlotChip('14-18', '14:00 - 18:00'),
+            _timeSlotChip('16-20', '16:00 - 20:00'),
+          ],
+        ),
+        if (_showDateError && _selectedTimeRange == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              'Выберите временной слот',
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _timeSlotChip(String value, String label) {
+    final bool selected = _selectedTimeRange == value;
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) {
+        setState(() {
+          _selectedTimeRange = value;
+          _showDateError = false;
+        });
+      },
     );
   }
 
@@ -536,8 +600,8 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
       hasErrors = true;
     }
 
-    // Проверяем, что дата выбрана (для статуса "Перенос")
-    if (_needsDeliveryDate() && _selectedDeliveryDate == null) {
+    // Проверяем, что дата и слот выбраны (для статуса "Перенос")
+    if (_needsDeliveryDate() && (_selectedDeliveryDate == null || _selectedTimeRange == null)) {
       setState(() {
         _showDateError = true;
       });
@@ -558,7 +622,7 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
       await Future.delayed(const Duration(milliseconds: 300));
 
       // Вызываем callback
-      widget.onStatusChanged(_selectedStatusId!, _noteController.text.trim(), _selectedDeliveryDate);
+      widget.onStatusChanged(_selectedStatusId!, _noteController.text.trim(), _selectedDeliveryDate, _selectedTimeRange);
 
       // Закрываем диалог
       if (mounted) {
@@ -571,7 +635,7 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
     }
   }
 
-  /// Выбор даты и времени доставки
+  /// Выбор даты доставки
   Future<void> _selectDeliveryDate() async {
     final date = await showDatePicker(
       context: context,
@@ -581,25 +645,16 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
     );
 
     if (date != null && mounted) {
-      final time = await showTimePicker(
-        context: context,
-        initialTime: _selectedDeliveryDate != null
-            ? TimeOfDay.fromDateTime(_selectedDeliveryDate!)
-            : const TimeOfDay(hour: 9, minute: 0),
-      );
-
-      if (time != null && mounted) {
         setState(() {
           _selectedDeliveryDate = DateTime(
             date.year,
             date.month,
             date.day,
-            time.hour,
-            time.minute,
+            10,
+            0,
           );
           _showDateError = false;
         });
-      }
     }
   }
 

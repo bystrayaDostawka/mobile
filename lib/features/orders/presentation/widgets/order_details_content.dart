@@ -11,6 +11,7 @@ import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/order_status_entity.dart';
 import '../bloc/order_details_bloc.dart';
 import 'order_details/photo_upload_widget.dart';
+import 'order_files_widget.dart';
 
 /// Виджет с содержимым деталей заказа
 class OrderDetailsContent extends StatefulWidget {
@@ -171,6 +172,22 @@ class _OrderDetailsContentState extends State<OrderDetailsContent> {
                 orderDetailsBloc: widget.orderDetailsBloc,
               ),
               const SizedBox(height: AppTheme.spacing16),
+              
+              // Файлы заказа
+              Text(
+                'Файлы заказа',
+                style: AppTextStyles.h5.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: AppTheme.spacing8),
+              Container(
+                height: 300, // Фиксированная высота для списка файлов
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.red, width: 2),
+                ),
+                child: OrderFilesWidget(orderId: widget.orderDetails.id),
+              ),
+              const SizedBox(height: AppTheme.spacing16),
+              
               // Комментарий курьера
               CourierCommentWidget(
                 initialComment: widget.orderDetails.courierComment,

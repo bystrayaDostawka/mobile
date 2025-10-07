@@ -30,6 +30,7 @@ class OrderModel {
   final String address;
   final String deliveryAt;
   final String? deliveredAt;
+  final String? deliveryTimeRange;
   final int courierId;
   final int orderStatusId;
   final String? note;
@@ -53,6 +54,7 @@ class OrderModel {
     required this.address,
     required this.deliveryAt,
     this.deliveredAt,
+    this.deliveryTimeRange,
     required this.courierId,
     required this.orderStatusId,
     this.note,
@@ -78,6 +80,7 @@ class OrderModel {
       address: json['address'] as String,
       deliveryAt: json['delivery_at'] as String,
       deliveredAt: json['delivered_at'] as String?,
+      deliveryTimeRange: json['delivery_time_range'] as String?,
       courierId: json['courier_id'] as int,
       orderStatusId: json['order_status_id'] as int,
       note: json['note'] as String?,
@@ -104,6 +107,7 @@ class OrderModel {
       'address': address,
       'delivery_at': deliveryAt,
       'delivered_at': deliveredAt,
+      'delivery_time_range': deliveryTimeRange,
       'courier_id': courierId,
       'order_status_id': orderStatusId,
       'note': note,

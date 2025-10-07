@@ -57,6 +57,7 @@ class OrderEntity extends BaseOrderEntity {
   final String orderNumber;
   final DateTime deliveryAt;
   final DateTime? deliveredAt;
+  final String? deliveryTimeRange;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String bankName;
@@ -79,6 +80,7 @@ class OrderEntity extends BaseOrderEntity {
     required this.orderNumber,
     required this.deliveryAt,
     this.deliveredAt,
+    this.deliveryTimeRange,
     required this.createdAt,
     required this.updatedAt,
     required this.bankName,
@@ -93,6 +95,7 @@ class OrderEntity extends BaseOrderEntity {
     orderNumber,
     deliveryAt,
     deliveredAt,
+    deliveryTimeRange,
     createdAt,
     updatedAt,
     bankName,
@@ -106,6 +109,7 @@ class OrderEntity extends BaseOrderEntity {
 class OrderDetailsEntity extends BaseOrderEntity {
   final DateTime? deliveryAt;
   final DateTime? deliveredAt; // Исправлена опечатка
+  final String? deliveryTimeRange;
   final int? courierId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -127,6 +131,7 @@ class OrderDetailsEntity extends BaseOrderEntity {
     super.declinedReason,
     this.deliveryAt,
     this.deliveredAt,
+    this.deliveryTimeRange,
     this.courierId,
     this.createdAt,
     this.updatedAt,
@@ -152,6 +157,7 @@ class OrderDetailsEntity extends BaseOrderEntity {
     ...super.props,
     deliveryAt,
     deliveredAt,
+    deliveryTimeRange,
     courierId,
     createdAt,
     updatedAt,

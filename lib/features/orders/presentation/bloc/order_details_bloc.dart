@@ -45,16 +45,18 @@ class UpdateOrderStatus extends OrderDetailsEvent {
   final int orderStatusId;
   final String? note;
   final DateTime? deliveryDate;
+  final String? deliveryTimeRange;
 
   const UpdateOrderStatus({
     required this.orderId,
     required this.orderStatusId,
     this.note,
     this.deliveryDate,
+    this.deliveryTimeRange,
   });
 
   @override
-  List<Object?> get props => [orderId, orderStatusId, note, deliveryDate];
+  List<Object?> get props => [orderId, orderStatusId, note, deliveryDate, deliveryTimeRange];
 }
 
 /// Загрузка статусов заказов
@@ -357,6 +359,7 @@ class OrderDetailsBloc extends Bloc<OrderDetailsEvent, OrderDetailsState> {
             orderStatusId: event.orderStatusId,
             note: event.note,
             deliveryDate: event.deliveryDate,
+            deliveryTimeRange: event.deliveryTimeRange,
           ),
         );
 

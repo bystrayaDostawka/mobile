@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/utils/order_status_utils.dart';
 import '../../../../shared/widgets/action_buttons_row.dart';
 import '../../../../shared/constants/app_constants.dart';
+import '../../../../shared/constants/time_slots.dart';
 import '../bloc/orders_bloc.dart';
 import '../../domain/entities/order_entity.dart';
 
@@ -290,7 +291,7 @@ class OrderCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Доставка: ${_formatDateTime(order.deliveryAt)}',
+                    'Доставка: ${_formatDeliveryTime(order)}',
                     style: const TextStyle(fontSize: 12),
                   ),
                 ],
@@ -308,7 +309,16 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  String _formatDeliveryTime(OrderEntity order) {
+    final date = order.deliveryAt;
+    final dateStr = '${date.day}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+    
+    if (order.deliveryTimeRange != null && order.deliveryTimeRange!.isNotEmpty) {
+      final timeSlotLabel = TimeSlots.getSlotLabel(order.deliveryTimeRange!);
+      return '$dateStr - $timeSlotLabel';
+    } else {
+      // Fallback к старому формату, если слот времени не указан
+      return '$dateStr ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    }
   }
 }

@@ -1,9 +1,12 @@
+import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/orders_response_model.dart';
 import '../models/order_details_response_model.dart';
 import '../models/order_status_model.dart';
 import '../models/photo_model.dart';
+import '../models/order_file_model.dart';
 import '../models/order_comment_model.dart';
+import '../models/create_order_request.dart';
 
 /// Абстрактный интерфейс для работы с удаленными данными заявок
 abstract class OrdersRemoteDataSource {
@@ -20,6 +23,21 @@ abstract class OrdersRemoteDataSource {
   /// Получение деталей заказа по ID
   Future<OrderDetailsResponseModel> getOrderDetails(int orderId);
 
+  /// Создание нового заказа
+  Future<OrderDetailsResponseModel> createOrder({
+    required int bankId,
+    required String product,
+    required String name,
+    required String surname,
+    required String patronymic,
+    required String phone,
+    required String address,
+    required DateTime deliveryDate,
+    String? deliveryTimeRange,
+    int? courierId,
+    String? note,
+  });
+
   /// Получение списка статусов заказов
   Future<List<OrderStatusModel>> getOrderStatuses();
 
@@ -29,6 +47,7 @@ abstract class OrdersRemoteDataSource {
     int orderStatusId,
     String? note,
     DateTime? deliveryDate,
+    {String? deliveryTimeRange}
   );
 
   /// Получение фотографий заказа
@@ -77,6 +96,15 @@ abstract class OrdersRemoteDataSource {
 
   /// Удаление комментария
   Future<void> deleteOrderComment(int orderId, int commentId);
+
+  /// Получение файлов заказа
+  Future<List<OrderFileModel>> getOrderFiles(int orderId);
+
+  /// Получение информации о файле заказа
+  Future<OrderFileModel> getOrderFile(int orderId, int fileId);
+
+  /// Скачивание файла заказа
+  Future<Response<List<int>>> downloadOrderFile(int orderId, int fileId);
 }
 
 /// Реализация удаленного источника данных заявок
@@ -134,6 +162,40 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
   }
 
   @override
+  Future<OrderDetailsResponseModel> createOrder({
+    required int bankId,
+    required String product,
+    required String name,
+    required String surname,
+    required String patronymic,
+    required String phone,
+    required String address,
+    required DateTime deliveryDate,
+    String? deliveryTimeRange,
+    int? courierId,
+    String? note,
+  }) async {
+    print('🌐 OrdersRemoteDataSource: Создаем новый заказ');
+    
+    final request = CreateOrderRequest(
+      bankId: bankId,
+      product: product,
+      name: name,
+      surname: surname,
+      patronymic: patronymic,
+      phone: phone,
+      address: address,
+      deliveryDate: deliveryDate,
+      deliveryTimeRange: deliveryTimeRange,
+      courierId: courierId,
+      note: note,
+    );
+    
+    final response = await apiClient.createOrder(request);
+    return OrderDetailsResponseModel.fromJson(response);
+  }
+
+  @override
   Future<List<OrderStatusModel>> getOrderStatuses() async {
     print('🌐 OrdersRemoteDataSource: Получаем статусы заказов');
     return await apiClient.getOrderStatuses();
@@ -145,6 +207,7 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
     int orderStatusId,
     String? note,
     DateTime? deliveryDate,
+    {String? deliveryTimeRange}
   ) async {
     print('🌐 OrdersRemoteDataSource: Обновляем статус заказа $orderId');
     print('🌐 OrdersRemoteDataSource: Статус: $orderStatusId, Причина: $note, Дата: $deliveryDate');
@@ -153,6 +216,7 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
       orderStatusId: orderStatusId,
       note: note,
       deliveryDate: deliveryDate,
+      deliveryTimeRange: deliveryTimeRange,
     );
     final response = await apiClient.updateOrderStatus(orderId, request);
 
@@ -253,5 +317,23 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
   Future<void> deleteOrderComment(int orderId, int commentId) async {
     print('🌐 OrdersRemoteDataSource: Удаляем комментарий $commentId');
     return await apiClient.deleteOrderComment(orderId, commentId);
+  }
+
+  @override
+  Future<List<OrderFileModel>> getOrderFiles(int orderId) async {
+    print('🌐 OrdersRemoteDataSource: Получаем файлы для заказа $orderId');
+    return await apiClient.getOrderFiles(orderId);
+  }
+
+  @override
+  Future<OrderFileModel> getOrderFile(int orderId, int fileId) async {
+    print('🌐 OrdersRemoteDataSource: Получаем файл $fileId для заказа $orderId');
+    return await apiClient.getOrderFile(orderId, fileId);
+  }
+
+  @override
+  Future<Response<List<int>>> downloadOrderFile(int orderId, int fileId) async {
+    print('🌐 OrdersRemoteDataSource: Скачиваем файл $fileId для заказа $orderId');
+    return await apiClient.downloadOrderFile(orderId, fileId);
   }
 }

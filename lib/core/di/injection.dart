@@ -17,6 +17,7 @@ import '../../features/orders/domain/repositories/orders_repository.dart'
     as orders_domain;
 import '../../features/orders/domain/usecases/get_orders_usecase.dart';
 import '../../features/orders/domain/usecases/get_order_details_usecase.dart';
+import '../../features/orders/domain/usecases/create_order_usecase.dart';
 import '../../features/orders/domain/usecases/update_order_status_usecase.dart';
 import '../../features/orders/domain/usecases/get_order_statuses_usecase.dart';
 import '../../features/orders/domain/usecases/get_order_photos_usecase.dart';
@@ -32,6 +33,8 @@ import '../../features/orders/domain/usecases/get_courier_comments_usecase.dart'
 import '../../features/orders/domain/usecases/create_order_comment_usecase.dart';
 import '../../features/orders/domain/usecases/update_order_comment_usecase.dart';
 import '../../features/orders/domain/usecases/delete_order_comment_usecase.dart';
+import '../../features/orders/domain/usecases/get_order_files_usecase.dart';
+import '../../features/orders/domain/usecases/download_order_file_usecase.dart';
 import '../../features/profile/data/repositories/profile_repository_impl.dart';
 import '../../features/profile/domain/repositories/profile_repository.dart'
     as profile_domain;
@@ -86,6 +89,12 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<GetOrderDetailsUseCase>(
     () => GetOrderDetailsUseCase(
       ordersRepository: getIt<orders_domain.OrdersRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<CreateOrderUseCase>(
+    () => CreateOrderUseCase(
+      getIt<orders_domain.OrdersRepository>(),
     ),
   );
 
@@ -173,6 +182,19 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<DeleteOrderCommentUseCase>(
     () => DeleteOrderCommentUseCase(
       ordersRepository: getIt<orders_domain.OrdersRepository>(),
+    ),
+  );
+
+  // Use cases для файлов заказов
+  getIt.registerLazySingleton<GetOrderFilesUseCase>(
+    () => GetOrderFilesUseCase(
+      repository: getIt<orders_domain.OrdersRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<DownloadOrderFileUseCase>(
+    () => DownloadOrderFileUseCase(
+      repository: getIt<orders_domain.OrdersRepository>(),
     ),
   );
 

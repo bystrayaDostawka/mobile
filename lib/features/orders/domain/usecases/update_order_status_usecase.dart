@@ -16,6 +16,7 @@ class UpdateOrderStatusUseCase {
       params.orderStatusId,
       params.note,
       params.deliveryDate,
+      deliveryTimeRange: params.deliveryTimeRange,
     );
   }
 }
@@ -27,10 +28,12 @@ class UpdateOrderStatusParams {
     required this.orderStatusId,
     this.note,
     this.deliveryDate,
+    this.deliveryTimeRange,
   });
 
   final int orderId;
   final int orderStatusId;
   final String? note;
   final DateTime? deliveryDate;
+  final String? deliveryTimeRange;
 }

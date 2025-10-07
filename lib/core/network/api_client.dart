@@ -12,7 +12,9 @@ import '../../features/orders/data/models/order_details_response_model.dart'
 import '../../features/orders/data/models/order_status_model.dart'
     as order_status_models;
 import '../../features/orders/data/models/photo_model.dart' as photo_models;
+import '../../features/orders/data/models/order_file_model.dart' as file_models;
 import '../../features/orders/data/models/order_comment_model.dart' as comment_models;
+import '../../features/orders/data/models/create_order_request.dart';
 
 /// Простой API клиент для работы с сервером
 class ApiClient {
@@ -102,6 +104,18 @@ class ApiClient {
     return order_details_models.OrderDetailsResponseModel.fromJson(
       response.data!,
     );
+  }
+
+  /// Создание нового заказа
+  Future<Map<String, dynamic>> createOrder(CreateOrderRequest request) async {
+    print('📋 Запрос: POST /api/mobile/orders');
+    print('📋 Данные: ${request.toJson()}');
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/api/mobile/orders',
+      data: request.toJson(),
+    );
+    print('📋 Ответ: ${response.data}');
+    return response.data!;
   }
 
   /// Получение списка статусов заказов
@@ -246,6 +260,50 @@ class ApiClient {
     return response.data ?? {};
   }
 
+  /// Получение файлов заказа
+  Future<List<file_models.OrderFileModel>> getOrderFiles(int orderId) async {
+    print('📁 Запрос: GET /api/mobile/orders/$orderId/files');
+    final response = await _dio.get<List<dynamic>>(
+      '/api/mobile/orders/$orderId/files',
+    );
+    print('📁 Ответ: ${response.data}');
+    return (response.data ?? [])
+        .map((file) => file_models.OrderFileModel.fromJson(file))
+        .toList();
+  }
+
+  /// Получение информации о файле заказа
+  Future<file_models.OrderFileModel> getOrderFile(
+    int orderId,
+    int fileId,
+  ) async {
+    print('📁 Запрос: GET /api/mobile/orders/$orderId/files/$fileId');
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/api/mobile/orders/$orderId/files/$fileId',
+    );
+    print('📁 Ответ: ${response.data}');
+    return file_models.OrderFileModel.fromJson(response.data!);
+  }
+
+  /// Скачивание файла заказа
+  Future<Response<List<int>>> downloadOrderFile(
+    int orderId,
+    int fileId,
+  ) async {
+    print('📥 Запрос: GET /api/mobile/orders/$orderId/files/$fileId/download');
+    
+    final response = await _dio.get<List<int>>(
+      '/api/mobile/orders/$orderId/files/$fileId/download',
+      options: Options(
+        responseType: ResponseType.bytes,
+        headers: {'Accept': 'application/octet-stream'},
+      ),
+    );
+    
+    print('📥 Ответ: Файл скачан, размер: ${response.data?.length ?? 0} байт');
+    return response;
+  }
+
   /// Получение уведомлений
   Future<List<dynamic>> getNotifications() async {
     final response = await _dio.get<List<dynamic>>('/api/notifications');
@@ -323,11 +381,13 @@ class UpdateOrderStatusRequest {
     required this.orderStatusId,
     this.note,
     this.deliveryDate,
+    this.deliveryTimeRange,
   });
 
   final int orderStatusId;
   final String? note;
   final DateTime? deliveryDate;
+  final String? deliveryTimeRange;
 
   Map<String, dynamic> toJson() {
     final json = {
@@ -338,6 +398,9 @@ class UpdateOrderStatusRequest {
     if (deliveryDate != null) {
       // Отправляем дату и время в формате ISO 8601
       json['delivery_at'] = deliveryDate!.toIso8601String();
+    }
+    if (deliveryTimeRange != null && deliveryTimeRange!.isNotEmpty) {
+      json['delivery_time_range'] = deliveryTimeRange;
     }
     
     print('📤 UpdateOrderStatusRequest: Отправляем данные: $json');

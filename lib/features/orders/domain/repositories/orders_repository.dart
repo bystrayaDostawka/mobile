@@ -1,7 +1,10 @@
+import 'package:dio/dio.dart';
+
 import '../../../../core/usecase/usecase.dart';
 import '../entities/order_entity.dart';
 import '../entities/order_status_entity.dart';
 import '../entities/order_comment_entity.dart';
+import '../entities/order_file_entity.dart';
 
 /// Абстрактный интерфейс репозитория заявок в доменном слое
 abstract class OrdersRepository {
@@ -18,6 +21,21 @@ abstract class OrdersRepository {
   /// Получение деталей заказа по ID
   Future<Result<OrderDetailsEntity>> getOrderDetails(int orderId);
 
+  /// Создание нового заказа
+  Future<Result<OrderDetailsEntity>> createOrder({
+    required int bankId,
+    required String product,
+    required String name,
+    required String surname,
+    required String patronymic,
+    required String phone,
+    required String address,
+    required DateTime deliveryDate,
+    String? deliveryTimeRange,
+    int? courierId,
+    String? note,
+  });
+
   /// Получение списка статусов заказов
   Future<Result<List<OrderStatusEntity>>> getOrderStatuses();
 
@@ -27,6 +45,7 @@ abstract class OrdersRepository {
     int orderStatusId,
     String? note,
     DateTime? deliveryDate,
+    {String? deliveryTimeRange}
   );
 
   /// Получение фотографий заказа
@@ -75,4 +94,10 @@ abstract class OrdersRepository {
 
   /// Удаление комментария
   Future<Result<void>> deleteOrderComment(int orderId, int commentId);
+
+  /// Получение файлов заказа
+  Future<Result<List<OrderFileEntity>>> getOrderFiles(int orderId);
+
+  /// Скачивание файла заказа
+  Future<Result<Response<List<int>>>> downloadOrderFile(int orderId, int fileId);
 }

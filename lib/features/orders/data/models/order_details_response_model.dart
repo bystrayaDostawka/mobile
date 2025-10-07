@@ -24,6 +24,7 @@ class OrderDetailsResponseModel {
   String? address;
   DateTime? deliveryAt;
   DateTime? deliveredAt;
+  String? deliveryTimeRange;
   int? courierId;
   int? orderStatusId;
   String? note;
@@ -45,6 +46,7 @@ class OrderDetailsResponseModel {
     this.address,
     this.deliveryAt,
     this.deliveredAt,
+    this.deliveryTimeRange,
     this.courierId,
     this.orderStatusId,
     this.note,
@@ -72,6 +74,7 @@ class OrderDetailsResponseModel {
         deliveredAt: json["delivered_at"] == null
             ? null
             : DateTime.parse(json["delivered_at"]),
+        deliveryTimeRange: json["delivery_time_range"],
         courierId: json["courier_id"],
         orderStatusId: json["order_status_id"],
         note: json["note"],
@@ -102,6 +105,7 @@ class OrderDetailsResponseModel {
     "address": address,
     "delivery_at": deliveryAt?.toIso8601String().split('T')[0],
     "delivered_at": deliveredAt?.toIso8601String().split('T')[0],
+    "delivery_time_range": deliveryTimeRange,
     "courier_id": courierId,
     "order_status_id": orderStatusId,
     "note": note,
