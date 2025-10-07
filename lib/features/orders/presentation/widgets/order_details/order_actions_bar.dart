@@ -37,8 +37,9 @@ class OrderActionsBar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Кнопка смены статуса
-            if (statuses.isNotEmpty)
+            // Кнопка смены статуса (скрываем для завершенных и отмененных заказов)
+            if (statuses.isNotEmpty &&
+                !_isFinalStatus(orderDetails.orderStatusId))
               BlocBuilder<OrderDetailsBloc, OrderDetailsState>(
                 builder: (context, state) {
                   final currentStatus = statuses.firstWhere(
@@ -51,21 +52,24 @@ class OrderActionsBar extends StatelessWidget {
                     currentStatus: currentStatus,
                     availableStatuses: statuses,
                     isLoading: isLoading,
-                    onStatusChanged: (statusId, note, deliveryDate, deliveryTimeRange) {
-                      context.read<OrderDetailsBloc>().add(
-                        UpdateOrderStatus(
-                          orderId: orderDetails.id,
-                          orderStatusId: statusId,
-                          note: note,
-                          deliveryDate: deliveryDate,
-                          deliveryTimeRange: deliveryTimeRange,
-                        ),
-                      );
-                    },
+                    onStatusChanged:
+                        (statusId, note, deliveryDate, deliveryTimeRange) {
+                          context.read<OrderDetailsBloc>().add(
+                            UpdateOrderStatus(
+                              orderId: orderDetails.id,
+                              orderStatusId: statusId,
+                              note: note,
+                              deliveryDate: deliveryDate,
+                              deliveryTimeRange: deliveryTimeRange,
+                            ),
+                          );
+                        },
                   );
                 },
               ),
-            if (statuses.isNotEmpty) const SizedBox(height: 12),
+            if (statuses.isNotEmpty &&
+                !_isFinalStatus(orderDetails.orderStatusId))
+              const SizedBox(height: 12),
             // Кнопки позвонить и маршрут
             Row(
               children: [
@@ -163,5 +167,11 @@ class OrderActionsBar extends StatelessWidget {
         print('Ошибка при копировании адреса: $clipboardError');
       }
     }
+  }
+
+  /// Проверить, является ли статус финальным (завершено или отменено)
+  bool _isFinalStatus(int statusId) {
+    // 4 - Завершено, 6 - Отменено
+    return statusId == 4 || statusId == 6;
   }
 }

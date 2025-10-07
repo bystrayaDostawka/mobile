@@ -33,7 +33,7 @@ class TimeSlotSelector extends StatelessWidget {
             crossAxisCount: 2,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 2.5,
+            childAspectRatio: 1.8,
           ),
           itemCount: TimeSlots.slots.length,
           itemBuilder: (context, index) {
@@ -45,15 +45,13 @@ class TimeSlotSelector extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isSelected 
-                        ? const Color(0xFF3B82F6) 
+                    color: isSelected
+                        ? const Color(0xFF3B82F6)
                         : const Color(0xFFE5E7EB),
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(12),
-                  color: isSelected 
-                      ? const Color(0xFFEFF6FF) 
-                      : Colors.white,
+                  color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
                 ),
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -72,8 +70,8 @@ class TimeSlotSelector extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: isSelected 
-                                      ? const Color(0xFF1F2937) 
+                                  color: isSelected
+                                      ? const Color(0xFF1F2937)
                                       : const Color(0xFF374151),
                                 ),
                               ),
@@ -82,8 +80,9 @@ class TimeSlotSelector extends StatelessWidget {
                                 slot.description,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: isSelected 
-                                      ? const Color(0xFF6B7280) 
+                                  overflow: TextOverflow.ellipsis,
+                                  color: isSelected
+                                      ? const Color(0xFF6B7280)
                                       : const Color(0xFF9CA3AF),
                                 ),
                               ),
@@ -139,11 +138,7 @@ class SelectedDeliveryTimeDisplay extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.schedule,
-            color: Color(0xFF059669),
-            size: 20,
-          ),
+          const Icon(Icons.schedule, color: Color(0xFF059669), size: 20),
           const SizedBox(width: 8),
           Text(
             'Выбрано: $formattedDate - $timeSlotLabel',
