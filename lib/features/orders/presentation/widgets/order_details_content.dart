@@ -65,11 +65,7 @@ class _OrderDetailsContentState extends State<OrderDetailsContent> {
             SnackBar(
               content: Row(
                 children: [
-                  Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  Icon(icon, color: Colors.white, size: 20),
                   const SizedBox(width: 8),
                   Text(state.message),
                 ],
@@ -147,11 +143,11 @@ class _OrderDetailsContentState extends State<OrderDetailsContent> {
               ],
               if (widget.orderDetails.declinedReason != null) ...[
                 Text(
-                  widget.orderDetails.orderStatusId == 5 
+                  widget.orderDetails.orderStatusId == 5
                       ? 'Причина переноса'
                       : widget.orderDetails.orderStatusId == 6
-                          ? 'Причина отмены'
-                          : 'Дополнительная информация',
+                      ? 'Причина отмены'
+                      : 'Дополнительная информация',
                   style: AppTextStyles.h5.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.error,
@@ -172,7 +168,7 @@ class _OrderDetailsContentState extends State<OrderDetailsContent> {
                 orderDetailsBloc: widget.orderDetailsBloc,
               ),
               const SizedBox(height: AppTheme.spacing16),
-              
+
               // Файлы заказа
               Text(
                 'Файлы заказа',
@@ -182,12 +178,16 @@ class _OrderDetailsContentState extends State<OrderDetailsContent> {
               Container(
                 height: 300, // Фиксированная высота для списка файлов
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.red, width: 2),
+                  border: Border.all(
+                    color: AppColors.textSecondary.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: OrderFilesWidget(orderId: widget.orderDetails.id),
               ),
               const SizedBox(height: AppTheme.spacing16),
-              
+
               // Комментарий курьера
               CourierCommentWidget(
                 initialComment: widget.orderDetails.courierComment,

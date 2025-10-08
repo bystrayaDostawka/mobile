@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/services/phone_service.dart';
+import '../../../../../core/services/whatsapp_service.dart';
+import '../../../../../core/services/map_service.dart';
 import '../../../../../shared/widgets/change_status_button.dart';
 import 'package:bystraya_dostawka/features/orders/domain/entities/order_entity.dart';
 import 'package:bystraya_dostawka/features/orders/domain/entities/order_status_entity.dart';
@@ -70,37 +71,59 @@ class OrderActionsBar extends StatelessWidget {
             if (statuses.isNotEmpty &&
                 !_isFinalStatus(orderDetails.orderStatusId))
               const SizedBox(height: 12),
-            // Кнопки позвонить и маршрут
+            // Кнопки позвонить, WhatsApp и маршрут
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _makePhoneCall(orderDetails.phone),
-                    icon: const Icon(Icons.phone, size: 20),
-                    label: const Text('Позвонить'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  child: Builder(
+                    builder: (context) => OutlinedButton.icon(
+                      onPressed: () =>
+                          _makePhoneCall(orderDetails.phone, context),
+                      icon: const Icon(Icons.phone, size: 20),
+                      label: const Text('Позвонить'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        side: BorderSide(color: AppColors.primary),
                       ),
-                      side: BorderSide(color: AppColors.primary),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Builder(
+                    builder: (context) => OutlinedButton.icon(
+                      onPressed: () =>
+                          _openWhatsApp(orderDetails.phone, context),
+                      icon: const Icon(Icons.chat, size: 20),
+                      label: const Text('WhatsApp'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF24CC63),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        side: const BorderSide(color: Color(0xFF24CC63)),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _openMaps(orderDetails.address),
                     icon: const Icon(Icons.navigation, size: 20),
                     label: const Text('На карте'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
+                      foregroundColor: const Color(0xFFF74231),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      side: BorderSide(color: AppColors.primary),
+                      side: const BorderSide(color: Color(0xFFF74231)),
                     ),
                   ),
                 ),
@@ -113,59 +136,58 @@ class OrderActionsBar extends StatelessWidget {
   }
 
   /// Совершить звонок
-  Future<void> _makePhoneCall(String phoneNumber) async {
+  Future<void> _makePhoneCall(String phoneNumber, BuildContext context) async {
     try {
-      final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-      if (await canLaunchUrl(phoneUri)) {
-        await launchUrl(phoneUri);
-      } else {
-        await Clipboard.setData(ClipboardData(text: phoneNumber));
-        print('Номер скопирован в буфер обмена: $phoneNumber');
+      final success = await PhoneService.makeCall(phoneNumber);
+      if (!success && context.mounted) {
+        _showSnackBar(context, 'Номер скопирован в буфер обмена: $phoneNumber');
       }
     } catch (e) {
-      print('Ошибка при звонке: $e');
-      try {
-        await Clipboard.setData(ClipboardData(text: phoneNumber));
-        print('Номер скопирован в буфер обмена: $phoneNumber');
-      } catch (clipboardError) {
-        print('Ошибка при копировании номера: $clipboardError');
+      debugPrint('Ошибка при звонке: $e');
+      if (context.mounted) {
+        _showSnackBar(context, 'Ошибка при звонке', isError: true);
       }
     }
+  }
+
+  /// Открыть WhatsApp с контактом
+  Future<void> _openWhatsApp(String phoneNumber, BuildContext context) async {
+    try {
+      final success = await WhatsAppService.openChat(phoneNumber);
+      if (!success && context.mounted) {
+        _showSnackBar(context, 'Номер скопирован в буфер обмена: $phoneNumber');
+      }
+    } catch (e) {
+      debugPrint('Ошибка при открытии WhatsApp: $e');
+      if (context.mounted) {
+        _showSnackBar(context, 'Ошибка при открытии WhatsApp', isError: true);
+      }
+    }
+  }
+
+  /// Показать SnackBar с уведомлением
+  void _showSnackBar(
+    BuildContext context,
+    String message, {
+    bool isError = false,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppColors.error : AppColors.primary,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   /// Открыть карты с адресом
   Future<void> _openMaps(String address) async {
     try {
-      final Uri mapsUri = Uri(scheme: 'geo', path: '0,0', query: 'q=$address');
-
-      if (await canLaunchUrl(mapsUri)) {
-        await launchUrl(mapsUri);
-      } else {
-        // Fallback для Google Maps
-        final Uri googleMapsUri = Uri(
-          scheme: 'https',
-          host: 'maps.google.com',
-          query: 'q=$address',
-        );
-
-        if (await canLaunchUrl(googleMapsUri)) {
-          await launchUrl(googleMapsUri);
-        } else {
-          print('Не удалось открыть карты для адреса: $address');
-          // Fallback - копируем адрес в буфер обмена
-          await Clipboard.setData(ClipboardData(text: address));
-          print('Адрес скопирован в буфер обмена: $address');
-        }
-      }
+      await MapService.openAddress(address);
     } catch (e) {
-      print('Ошибка при открытии карт: $e');
-      // Fallback - копируем адрес в буфер обмена
-      try {
-        await Clipboard.setData(ClipboardData(text: address));
-        print('Адрес скопирован в буфер обмена: $address');
-      } catch (clipboardError) {
-        print('Ошибка при копировании адреса: $clipboardError');
-      }
+      // В случае ошибки просто логируем, сервис сам обработает все случаи
+      debugPrint('Ошибка при открытии карт: $e');
     }
   }
 
