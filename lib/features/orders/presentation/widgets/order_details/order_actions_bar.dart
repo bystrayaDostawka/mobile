@@ -155,7 +155,7 @@ class OrderActionsBar extends StatelessWidget {
     try {
       final success = await WhatsAppService.openChat(phoneNumber);
       if (!success && context.mounted) {
-        _showSnackBar(context, 'Номер скопирован в буфер обмена: $phoneNumber');
+        _showSnackBar(context, 'Не удалось открыть WhatsApp', isError: true);
       }
     } catch (e) {
       debugPrint('Ошибка при открытии WhatsApp: $e');

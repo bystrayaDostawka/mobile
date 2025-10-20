@@ -2,9 +2,14 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Сервис для работы с телефонными звонками
+/// Поддерживается на всех версиях Android (API 1+) и iOS
 class PhoneService {
   /// Совершить звонок на указанный номер
   /// Возвращает true, если звонок был инициирован, false если номер был скопирован
+  ///
+  /// Поддержка Android:
+  /// - Все версии Android поддерживают tel:// URL scheme
+  /// - На планшетах без GSM модуля номер копируется в буфер обмена
   static Future<bool> makeCall(String phoneNumber) async {
     try {
       // Очищаем номер от лишних символов
