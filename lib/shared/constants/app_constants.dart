@@ -46,6 +46,9 @@ class AppConstants {
   // static const String baseUrl = 'http://192.168.0.103';
   static const String apiVersion = '/api/v1';
 
+  // OneSignal
+  static const String oneSignalAppId = 'b4334469-2b6b-475f-aaa7-ccdf5a2a4a14';
+
   // Storage keys
   static const String authTokenKey = 'auth_token';
   static const String userRoleKey = 'user_role';

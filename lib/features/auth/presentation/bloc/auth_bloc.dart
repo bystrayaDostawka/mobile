@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../../profile/domain/entities/user_entity.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/services/onesignal_service.dart';
 
 // Events
 abstract class AuthEvent extends Equatable {
@@ -91,6 +92,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (result is Success<UserEntity>) {
         print('🔐 AuthBloc: Успешная авторизация для ${result.data.name}');
+        
+        // Интеграция с OneSignal после успешного логина
+        try {
+          // Логин пользователя в OneSignal (связываем устройство с пользователем)
+          await oneSignalService.login(result.data.id.toString());
+          
+          // Устанавливаем роль пользователя как тег
+          if (result.data.role != null) {
+            await oneSignalService.setUserRole(result.data.role!);
+          }
+          
+          // Отправляем Player ID на сервер
+          final playerId = oneSignalService.playerId;
+          if (playerId != null) {
+            await oneSignalService.sendPlayerIdToServer(playerId);
+          }
+        } catch (e) {
+          print('⚠️ Ошибка интеграции с OneSignal: $e');
+        }
+        
         emit(AuthSuccess(user: result.data));
       } else if (result is FailureResult<UserEntity>) {
         print('🔐 AuthBloc: Ошибка авторизации: ${result.failure}');
@@ -111,6 +132,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _authRepository.logout();
 
     if (result.isSuccess) {
+      // Выход из OneSignal
+      try {
+        await oneSignalService.logout();
+      } catch (e) {
+        print('⚠️ Ошибка выхода из OneSignal: $e');
+      }
+      
       emit(AuthInitial());
     } else {
       emit(AuthFailure(message: 'Ошибка выхода'));

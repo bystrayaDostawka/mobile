@@ -6,6 +6,7 @@ import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/auth_service.dart';
+import 'core/services/onesignal_service.dart';
 import 'core/widgets/auth_wrapper.dart';
 import 'shared/constants/app_constants.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -16,6 +17,9 @@ void main() async {
 
   await configureDependencies();
   await authService.initialize();
+  
+  // Инициализация OneSignal для пуш-уведомлений
+  await oneSignalService.initialize();
 
   runApp(const MyApp());
 }

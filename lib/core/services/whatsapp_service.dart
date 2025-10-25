@@ -6,7 +6,7 @@ class WhatsAppService {
   /// Возвращает true, если WhatsApp был открыт, false если не удалось открыть
   static Future<bool> openChat(String phoneNumber) async {
     try {
-      final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+      final cleanPhone = _normalizePhoneForWhatsApp(phoneNumber);
       final whatsappUrl = Uri.parse('whatsapp://send?phone=$cleanPhone');
 
       if (await canLaunchUrl(whatsappUrl)) {
@@ -16,7 +16,7 @@ class WhatsAppService {
         return await _openWebWhatsApp(cleanPhone);
       }
     } catch (e) {
-      final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+      final cleanPhone = _normalizePhoneForWhatsApp(phoneNumber);
       return await _openWebWhatsApp(cleanPhone);
     }
   }
@@ -64,5 +64,31 @@ class WhatsAppService {
   /// Нормализует номер телефона для WhatsApp
   static String normalizePhoneNumber(String phoneNumber) {
     return phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+  }
+
+  /// Нормализует номер телефона для WhatsApp
+  /// Добавляет код страны если отсутствует
+  static String _normalizePhoneForWhatsApp(String phoneNumber) {
+    // Удаляем все символы кроме цифр и +
+    var cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    
+    // Если номер начинается с +, оставляем как есть
+    if (cleanPhone.startsWith('+')) {
+      return cleanPhone;
+    }
+    
+    // Если номер начинается с 8, заменяем на +7 (Россия/Казахстан)
+    if (cleanPhone.startsWith('8')) {
+      cleanPhone = '+7${cleanPhone.substring(1)}';
+      return cleanPhone;
+    }
+    
+    // Если номер начинается с 7, добавляем +
+    if (cleanPhone.startsWith('7')) {
+      return '+$cleanPhone';
+    }
+    
+    // По умолчанию добавляем +7 (российский номер)
+    return '+7$cleanPhone';
   }
 }

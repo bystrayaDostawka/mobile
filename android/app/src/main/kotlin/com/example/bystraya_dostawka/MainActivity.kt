@@ -1,4 +1,4 @@
-package com.example.bystraya_dostawka
+package com.ltmstudio.bystraya
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -51,6 +51,7 @@
 	<string>Приложение использует местоположение для построения маршрутов к адресам доставки</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
+		<string>whatsapp</string>
 		<string>comgooglemaps</string>
 		<string>yandexmaps</string>
 		<string>yandexnavi</string>

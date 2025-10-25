@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1045248668905",
+    "project_id": "bystrayadostavka-e9b1a",
+    "storage_bucket": "bystrayadostavka-e9b1a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1045248668905:android:6d52bc98aefc8b78e12c78",
+        "android_client_info": {
+          "package_name": "com.ltmstudio.bystraya"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1zAOgD0q8bR1_LslbTgsyBhxyb8PkLW8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
